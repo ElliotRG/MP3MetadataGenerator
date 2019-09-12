@@ -4,6 +4,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -16,7 +17,8 @@ import com.mpatric.mp3agic.UnsupportedTagException;
 
 public class MP3MetadataGenerator {
 	
-	private static String MP3_DIRECTORY = "." + File.separator;
+	private static String MP3_DIRECTORY = new File("." + File.separator).getAbsolutePath();
+	private static final String WINDOW_TITLE = "Select MP3 files folder";
 
 	public static void main(String[] args) {
 		try {
@@ -25,20 +27,22 @@ public class MP3MetadataGenerator {
 				| UnsupportedLookAndFeelException uiException) {
 			uiException.printStackTrace();
 		}
-		
-		JFileChooser chooser = new JFileChooser();
-	    chooser.setCurrentDirectory(new java.io.File(System.getProperty("user.home") + File.separator + "Music"));
-	    chooser.setDialogTitle("Select MP3 files folder");
-	    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-	    chooser.setAcceptAllFileFilterUsed(false);
-	    if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-	    	MP3_DIRECTORY = chooser.getSelectedFile().getAbsolutePath();
-	    } else {
-	    	System.err.println("No MP3 Folder Selected");
-	    	System.err.println("Closing MP3 Metadata Generator");
-	    	System.exit(1);
-	    }
-		
+
+		int userAnswer = JOptionPane.showConfirmDialog(null, "Use current folder?", WINDOW_TITLE, JOptionPane.YES_NO_OPTION); 
+		if(userAnswer == JOptionPane.CLOSED_OPTION) {
+			closeApp();
+		} else if (userAnswer == JOptionPane.NO_OPTION) {
+			JFileChooser chooser = new JFileChooser();
+		    chooser.setCurrentDirectory(new java.io.File(System.getProperty("user.home") + File.separator + "Music"));
+		    chooser.setDialogTitle(WINDOW_TITLE);
+		    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		    chooser.setAcceptAllFileFilterUsed(false);
+		    if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+		    	MP3_DIRECTORY = chooser.getSelectedFile().getAbsolutePath();
+		    } else {
+		    	closeApp();
+		    }
+		}
 		
 		File[] files = findFilesInDirectory(MP3_DIRECTORY);
 		System.out.println("========================================================");
@@ -94,6 +98,12 @@ public class MP3MetadataGenerator {
         		return filename.endsWith(".mp3");
         	}
         });
+	}
+	
+	public static void closeApp() {
+		System.err.println("No MP3 Folder Selected");
+    	System.err.println("Closing MP3 Metadata Generator");
+    	System.exit(1);
 	}
 
 }
