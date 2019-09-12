@@ -1,4 +1,5 @@
 package main;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -61,31 +62,38 @@ public class MP3MetadataGenerator {
 		    }
 		}
 		
-		File[] files = findFilesInDirectory(MP3_DIRECTORY);
 		System.out.println("========================================================");
 		System.out.println("**************** MP3 METADATA GENERATOR ****************");
 		System.out.println("========================================================");
 		System.out.println("Finding MP3 files in " + MP3_DIRECTORY + " ...");
 		System.out.println("========================================================");
 		
-		for (File file : files) {
+		for (File file : findFilesInDirectory(MP3_DIRECTORY)) {
 			String filePath = file.getPath();
 			String fileName = file.getName();
 			
 			try {
 				Mp3File mp3file = new Mp3File(filePath);
 				ID3v2 metadata;
+				
 				if (mp3file.hasId3v2Tag()) {
 					System.out.println(fileName + " has ID3V2");
 					metadata =  mp3file.getId3v2Tag();
+					metadata.setAlbumArtist(" ");
+					metadata.setTrack("");
+					metadata.setComment(" ");
+					metadata.setComposer(" ");
+					metadata.setItunesComment(" ");
 				} else {
 					System.err.println(fileName + " has not ID3V2");
 					metadata = new ID3v22Tag();
 				}
+				
 				cleanOriginalMetadata(metadata);
 				mp3file.setId3v1Tag(metadata);
 				fileName = fileName.substring(0, fileName.length() - MP3_EXTENSION.length());
 				String[] fileNameSplit = fileName.split(ARTIST_SONG_SEPARATOR);
+				
 				System.out.println("Setting metadata for: " + fileName);
 				String artist = fileNameSplit[firstArtistFormat ? 0 : 1].trim();
 				metadata.setArtist(artist);
@@ -108,14 +116,15 @@ public class MP3MetadataGenerator {
 			} catch (UnsupportedTagException | InvalidDataException | IOException e) {
 				e.printStackTrace();
 			}
+			
 			file.delete();
 			System.out.println("========================================================");
 		}
-
-		files = findFilesInDirectory(MP3_DIRECTORY);
-		for (File file : files) {
+		
+		for (File file : findFilesInDirectory(MP3_DIRECTORY)) {
 			file.renameTo(new File(MP3_DIRECTORY + File.separator + file.getName().substring(1)));
 		}
+		
 		System.out.println("========================================================");
 	}
 	
