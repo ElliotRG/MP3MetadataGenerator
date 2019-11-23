@@ -65,13 +65,19 @@ public class MP3MetadataGenerator {
 					System.err.println(fileName + " has not ID3V2");
 					metadata = new ID3v22Tag();
 				}
+				cleanOriginalMetadata(metadata);
 				mp3file.setId3v1Tag(metadata);
 				fileName = fileName.substring(0, fileName.length() - 4);
 				String[] fileNameSplit = fileName.split(" - ");
 				System.out.println("Setting metadata for: " + fileName);
-				metadata.setArtist(fileNameSplit[0]);
-				metadata.setTitle(fileNameSplit[1]);
+				String artist = fileNameSplit[0];
+				metadata.setArtist(artist);
+				
+				String title = cleanTitle(fileNameSplit[1]);
+				metadata.setTitle(title);
 				metadata.setAlbum(fileNameSplit[1].split("\\(")[0]);
+				
+				fileName = artist + " - " + title;
 				try {
 					mp3file.save(MP3_DIRECTORY + File.separator + "@" + fileName + ".mp3");
 				} catch (NotSupportedException e) {
@@ -89,6 +95,54 @@ public class MP3MetadataGenerator {
 			file.renameTo(new File(MP3_DIRECTORY + File.separator + file.getName().substring(1)));
 		}
 		System.out.println("========================================================");
+	}
+	
+	public static ID3v2 cleanOriginalMetadata(ID3v2 metadata) {
+		metadata.clearAlbumImage();
+		metadata.setAlbum("");
+		metadata.setAlbumArtist("");
+		metadata.setArtist("");
+		metadata.setArtistUrl("");
+		metadata.setAudiofileUrl("");
+		metadata.setAudioSourceUrl("");
+		metadata.setComment("");
+		metadata.setCommercialUrl("");
+		metadata.setComposer("");
+		metadata.setCopyright("");
+		metadata.setCopyrightUrl("");
+		metadata.setDate("");
+		metadata.setGenreDescription("");
+		metadata.setGrouping("");
+		metadata.setItunesComment("");
+		metadata.setKey("");
+		metadata.setLyrics("");
+		metadata.setOriginalArtist("");
+		metadata.setPaymentUrl("");
+		metadata.setPublisher("");
+		metadata.setPublisherUrl("");
+		metadata.setRadiostationUrl("");
+		metadata.setTitle("");
+		metadata.setTrack("");
+		metadata.setUrl("");
+		metadata.setYear("");
+
+		return metadata;
+	}
+	
+	public static String cleanTitle(String rawTitle) {
+		String[] patterns = { "Mix", "Remix", "Edit", "Bootleg", "Version", 
+				"Acapella", "Acoustic", "Anthem", "Soundtrack" };
+		String cleanTitle = rawTitle;
+		for(String p : patterns) {
+			if(cleanTitle.contains(p)) {
+				// Adding 1 to endIndex to include ) or ] after the pattern words,
+				// if there are. If there aren't, then after the word a space will be 
+				// included but later removed by trim at return.
+				cleanTitle = rawTitle.substring(0, rawTitle.lastIndexOf(p) + p.length() + 1);
+			}
+		}
+		
+		return cleanTitle.trim();
 	}
 	
 	public static File[] findFilesInDirectory(String dirName) {
