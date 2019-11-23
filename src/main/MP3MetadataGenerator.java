@@ -18,7 +18,12 @@ import com.mpatric.mp3agic.UnsupportedTagException;
 public class MP3MetadataGenerator {
 	
 	private static String MP3_DIRECTORY = new File("." + File.separator).getAbsolutePath();
-	private static final String WINDOW_TITLE = "Select MP3 files folder";
+	private static final String MP3_EXTENSION = ".mp3";
+	private static final String ARTIST_SONG_SEPARATOR = " - ";
+	private static final String SELECT_FORMAT_WINDOW_TITLE = "Select MP3 filename format";
+	private static final String SELECT_FORMAT_WINDOW_TEXT = "What MP3 filename format do you use?";
+	private static final String SELECT_FOLDER_WINDOW_TITLE = "Select MP3 files folder";
+	private static final String SELECT_FOLDER_WINDOW_TEXT = "Use current folder?";
 
 	public static void main(String[] args) {
 		try {
@@ -27,14 +32,26 @@ public class MP3MetadataGenerator {
 				| UnsupportedLookAndFeelException uiException) {
 			uiException.printStackTrace();
 		}
+		
+		String[] formats = {"Artist - Song", "Song - Artist"};
+		Object selected = JOptionPane.showInputDialog(null, SELECT_FORMAT_WINDOW_TEXT, SELECT_FORMAT_WINDOW_TITLE, JOptionPane.DEFAULT_OPTION, 
+				null, formats, formats[0]);
+		boolean firstArtistFormat = true;
+		if (selected != null) {
+		    if(!formats[0].equals(selected.toString())) {
+		    	firstArtistFormat = false;
+		    }
+		} else {
+			closeApp();
+		}
 
-		int userAnswer = JOptionPane.showConfirmDialog(null, "Use current folder?", WINDOW_TITLE, JOptionPane.YES_NO_OPTION); 
-		if(userAnswer == JOptionPane.CLOSED_OPTION) {
+		int userAnswer = JOptionPane.showConfirmDialog(null, SELECT_FOLDER_WINDOW_TEXT, SELECT_FOLDER_WINDOW_TITLE, JOptionPane.YES_NO_OPTION); 
+		if (userAnswer == JOptionPane.CLOSED_OPTION) {
 			closeApp();
 		} else if (userAnswer == JOptionPane.NO_OPTION) {
 			JFileChooser chooser = new JFileChooser();
 		    chooser.setCurrentDirectory(new java.io.File(System.getProperty("user.home") + File.separator + "Music"));
-		    chooser.setDialogTitle(WINDOW_TITLE);
+		    chooser.setDialogTitle(SELECT_FOLDER_WINDOW_TITLE);
 		    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		    chooser.setAcceptAllFileFilterUsed(false);
 		    if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
@@ -51,7 +68,7 @@ public class MP3MetadataGenerator {
 		System.out.println("Finding MP3 files in " + MP3_DIRECTORY + " ...");
 		System.out.println("========================================================");
 		
-		for(File file : files) {
+		for (File file : files) {
 			String filePath = file.getPath();
 			String fileName = file.getName();
 			
@@ -67,19 +84,24 @@ public class MP3MetadataGenerator {
 				}
 				cleanOriginalMetadata(metadata);
 				mp3file.setId3v1Tag(metadata);
-				fileName = fileName.substring(0, fileName.length() - 4);
-				String[] fileNameSplit = fileName.split(" - ");
+				fileName = fileName.substring(0, fileName.length() - MP3_EXTENSION.length());
+				String[] fileNameSplit = fileName.split(ARTIST_SONG_SEPARATOR);
 				System.out.println("Setting metadata for: " + fileName);
-				String artist = fileNameSplit[0];
+				String artist = fileNameSplit[firstArtistFormat ? 0 : 1].trim();
 				metadata.setArtist(artist);
 				
-				String title = cleanTitle(fileNameSplit[1]);
+				String title = cleanTitle(fileNameSplit[firstArtistFormat ? 1 : 0]);
 				metadata.setTitle(title);
-				metadata.setAlbum(fileNameSplit[1].split("\\(")[0]);
+				metadata.setAlbum(title.split("\\(")[0]);
 				
-				fileName = artist + " - " + title;
+				if(firstArtistFormat) {
+					fileName = artist + ARTIST_SONG_SEPARATOR + title;
+				} else {
+					fileName = title + ARTIST_SONG_SEPARATOR + artist;
+				}
+				
 				try {
-					mp3file.save(MP3_DIRECTORY + File.separator + "@" + fileName + ".mp3");
+					mp3file.save(MP3_DIRECTORY + File.separator + "@" + fileName + MP3_EXTENSION);
 				} catch (NotSupportedException e) {
 					e.printStackTrace();
 				}
@@ -91,7 +113,7 @@ public class MP3MetadataGenerator {
 		}
 
 		files = findFilesInDirectory(MP3_DIRECTORY);
-		for(File file : files) {
+		for (File file : files) {
 			file.renameTo(new File(MP3_DIRECTORY + File.separator + file.getName().substring(1)));
 		}
 		System.out.println("========================================================");
@@ -133,8 +155,8 @@ public class MP3MetadataGenerator {
 		String[] patterns = { "Mix", "Remix", "Edit", "Bootleg", "Version", 
 				"Acapella", "Acoustic", "Anthem", "Soundtrack" };
 		String cleanTitle = rawTitle;
-		for(String p : patterns) {
-			if(cleanTitle.contains(p)) {
+		for (String p : patterns) {
+			if (cleanTitle.contains(p)) {
 				// Adding 1 to endIndex to include ) or ] after the pattern words,
 				// if there are. If there aren't, then after the word a space will be 
 				// included but later removed by trim at return.
@@ -149,7 +171,7 @@ public class MP3MetadataGenerator {
 		File dir = new File(dirName);
         return dir.listFiles(new FilenameFilter() {
         	public boolean accept(File dir, String filename) {
-        		return filename.endsWith(".mp3");
+        		return filename.endsWith(MP3_EXTENSION);
         	}
         });
 	}
