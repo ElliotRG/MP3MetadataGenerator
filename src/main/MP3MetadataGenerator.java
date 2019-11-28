@@ -133,7 +133,6 @@ public class MP3MetadataGenerator {
 		metadata.setCopyright("");
 		metadata.setCopyrightUrl("");
 		metadata.setDate("");
-		metadata.setGenreDescription("");
 		metadata.setGrouping("");
 		metadata.setItunesComment("");
 		metadata.setKey("");
@@ -160,9 +159,11 @@ public class MP3MetadataGenerator {
 				// Adding 1 to endIndex to include ) or ] after the pattern words,
 				// if there are. If there aren't, then after the word a space will be 
 				// included but later removed by trim at return.
-				cleanTitle = rawTitle.substring(0, rawTitle.lastIndexOf(p) + p.length() + 1);
+				cleanTitle = rawTitle.substring(0, rawTitle.indexOf(p) + p.length() + 1);
 			}
 		}
+		
+		cleanTitle = cleanTitle.replace("my-free-mp3s.com", "");
 		
 		return cleanTitle.trim();
 	}
