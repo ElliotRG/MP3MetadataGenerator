@@ -95,6 +95,7 @@ public class MP3MetadataGenerator {
 				String[] fileNameSplit = fileName.split(ARTIST_SONG_SEPARATOR);
 				
 				System.out.println("Setting metadata for: " + fileName);
+
 				String artist = fileNameSplit[firstArtistFormat ? 0 : 1].trim();
 				metadata.setArtist(artist);
 				
@@ -107,7 +108,7 @@ public class MP3MetadataGenerator {
 				} else {
 					fileName = title + ARTIST_SONG_SEPARATOR + artist;
 				}
-				
+
 				try {
 					mp3file.save(MP3_DIRECTORY + File.separator + "@" + fileName + MP3_EXTENSION);
 				} catch (NotSupportedException e) {
