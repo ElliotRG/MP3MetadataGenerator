@@ -38,7 +38,7 @@ public class MP3MetadataGenerator {
 				null, formats, formats[0]);
 		boolean firstArtistFormat = true;
 		if (selected != null) {
-		    if(!formats[0].equals(selected.toString())) {
+		    if (!formats[0].equals(selected.toString())) {
 		    	firstArtistFormat = false;
 		    }
 		} else {
@@ -94,7 +94,7 @@ public class MP3MetadataGenerator {
 				metadata.setTitle(title);
 				metadata.setAlbum(title.split("\\(")[0]);
 				
-				if(firstArtistFormat) {
+				if (firstArtistFormat) {
 					fileName = artist + ARTIST_SONG_SEPARATOR + title;
 				} else {
 					fileName = title + ARTIST_SONG_SEPARATOR + artist;
