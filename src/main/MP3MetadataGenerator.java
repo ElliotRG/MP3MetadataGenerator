@@ -1,10 +1,13 @@
 package main;
 
+import java.awt.BorderLayout;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -15,6 +18,8 @@ import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.NotSupportedException;
 import com.mpatric.mp3agic.UnsupportedTagException;
+
+import ui.AutoCompleteComboBox;
 
 public class MP3MetadataGenerator {
 	
@@ -35,11 +40,11 @@ public class MP3MetadataGenerator {
 		}
 		
 		String[] formats = {"Artist - Song", "Song - Artist"};
-		Object selected = JOptionPane.showInputDialog(null, SELECT_FORMAT_WINDOW_TEXT, SELECT_FORMAT_WINDOW_TITLE, JOptionPane.DEFAULT_OPTION, 
+		String selected = (String) JOptionPane.showInputDialog(null, SELECT_FORMAT_WINDOW_TEXT, SELECT_FORMAT_WINDOW_TITLE, JOptionPane.DEFAULT_OPTION, 
 				null, formats, formats[0]);
 		boolean firstArtistFormat = true;
 		if (selected != null) {
-		    if (!formats[0].equals(selected.toString())) {
+		    if (!formats[0].equals(selected)) {
 		    	firstArtistFormat = false;
 		    }
 		} else {
@@ -61,6 +66,19 @@ public class MP3MetadataGenerator {
 		    	closeApp();
 		    }
 		}
+		
+		/* TODO: TESTING JCOMBOBOX AS GENRE SELECTION */
+		String[] elements = new String[] { "arthur", "brian", "chet", "danny", "dave", 
+                "don", "edmond", "eddy", "glen", "gregory", "john",
+                "ken", "malcolm", "pete", "stephanie", "yvonne" };
+
+		JFrame genresWindow = new JFrame();
+		JComboBox<String> comboBox = new AutoCompleteComboBox(elements);
+		genresWindow.add(comboBox, BorderLayout.CENTER);
+		genresWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		genresWindow.setSize(800, 500);
+		genresWindow.setVisible(true);
+		/* ================ */
 		
 		System.out.println("========================================================");
 		System.out.println("**************** MP3 METADATA GENERATOR ****************");
